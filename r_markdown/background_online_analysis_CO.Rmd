@@ -30,19 +30,21 @@ The dataset has been optimized to work with `tidyverse`. It is strongly recommen
 * First we'll load the sample info data.
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, results='markup', cache=FALSE}
-  load("../r_files/samples.Rda") 
+  load("../r_files/samples.Rda")
+
 ```
 
 * Next we'll load the sample times file
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, results='markup', cache=FALSE}
-  load("../r_files/test_times.Rda") 
+  load("../r_files/test_times.Rda")
 ```
 
 * Next we'll load the pollutant data we're interested in. In this case we're going to look at the CO (five gas) data:
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, results='markup', cache=FALSE}
   load("../r_files/fivegas_merged.Rda")
+
   pol_data <- fivegas_merged
 ```
 
@@ -52,19 +54,19 @@ The dataset has been optimized to work with `tidyverse`. It is strongly recommen
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, results='markup', cache=FALSE}  
   times_pre <- dplyr::filter(test_times, var == "ignite") %>%
-                tidyr::spread(var, value) %>%
-                dplyr::select(-date) %>%
-                dplyr::rename(end = ignite) %>%
-                dplyr::mutate(start = end - 10*60)
+               tidyr::spread(var, value) %>%
+               dplyr::select(-date) %>%
+               dplyr::rename(end = ignite) %>%
+               dplyr::mutate(start = end - 10*60)
 
   times_post <- dplyr::filter(test_times, var == "end") %>%
                 tidyr::spread(var, value) %>%
                 dplyr::select(-date) %>%
                 dplyr::rename(start = end) %>%
                 dplyr::mutate(end = start + 10*60)
-  
+
   times_sample <- dplyr::filter(test_times,
-                          var == "start_1" | var == "shutdown") %>%
+                                var == "start_1" | var == "shutdown") %>%
                   tidyr::spread(var, value) %>%
                   dplyr::select(-date) %>%
                   dplyr::rename(start = start_1, end = shutdown)
@@ -86,14 +88,15 @@ The dataset has been optimized to work with `tidyverse`. It is strongly recommen
 ## Analyze
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, results='markup', cache=FALSE}
-  out <- dplyr::group_by(df, id, type) %>%
-          dplyr::summarise(mean = mean(ppm)) %>%
-          dplyr::ungroup()
+  out <- dplyr::group_by(df, id, type, pol) %>%
+         dplyr::summarise(mean = mean(val)) %>%
+         dplyr::ungroup()
 ```
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, results='markup', cache=FALSE, fig.width = 12, fig.height=8}
   ggplot(out, aes(id, mean, colour = type)) +
-  geom_point() + 
+  geom_point() +
+  facet_wrap(~ pol, scales = "free") +
   ggtitle("FiveGas") +
   theme_minimal()
 ```
