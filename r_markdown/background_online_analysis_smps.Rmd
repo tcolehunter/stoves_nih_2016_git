@@ -17,6 +17,7 @@ The dataset has been optimized to work with `tidyverse`. It is strongly recommen
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, results='markup', cache=FALSE}
   library(tidyverse)
+  library(wesanderson)
 ```
 
 # Source files
@@ -138,19 +139,54 @@ Calculate mean pollutant value for each period
          ggtitle("Ultrafine Particles (dp < 100 nm)") +
          theme_minimal() +
          xlab("test id") +
-         ylab("concentration") +
-         theme(legend.position = "none", axis.text.x = element_text(angle=90, hjust=1))
+         ylab("concentration") + 
+         scale_color_manual(values=wes_palette(n=3, name="GrandBudapest")) +
+         theme(axis.text.x = element_text(angle=90, hjust=1))
 ```
 
 * Sort by time of day
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, results='markup', cache=FALSE, fig.width = 12, fig.height=8}
-  background_means <- dplyr::filter(background_means, type != "sample")
-  ggplot(background_means, aes(time, mean, colour = type)) +
+  background_time <- dplyr::filter(background_means, type != "sample")
+
+  ggplot(background_time, aes(time, mean, colour = type)) +
          geom_point() +
          ggtitle("Ultrafine Particles (dp < 100 nm)") +
          theme_minimal() +
          xlab("test id") +
          ylab("concentration") +
-         theme(legend.position = "none", axis.text.x = element_text(angle=45, hjust=1))
+         scale_color_manual(values=wes_palette(n=3, name="GrandBudapest")) +
+         theme(axis.text.x = element_text(angle=45, hjust=1))
+```
+
+* ratio of pre to post background
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='markup', cache=FALSE, fig.width = 12, fig.height=8}
+  background_ratio <- dplyr::select(background_means, id, type, mean) %>%
+                      tidyr::spread(type, mean) %>%
+                      dplyr::mutate(bkgd_ratio = pre/post, 
+                                    bkgd_avg = (pre + post)/2,
+                                    bkgd_sample_ratio = sample/bkgd_avg)
+                      
+  ggplot(background_ratio, aes(id, bkgd_ratio)) +
+         geom_point() +
+         ggtitle("Ultrafine Particles (dp < 100 nm)") +
+         theme_minimal() +
+         xlab("test id") +
+         ylab("pre to post background ratio") +
+         scale_color_manual(values=wes_palette(n=3, name="GrandBudapest")) +
+         theme(axis.text.x = element_text(angle=45, hjust=1))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='markup', cache=FALSE, fig.width = 6, fig.height=8}
+    ggplot(background_ratio, aes(x = 1, y = bkgd_sample_ratio)) +
+         
+         geom_dotplot(binaxis = "y", stackdir = "center") +
+         ggtitle("Ultrafine Particles (dp < 100 nm)") +
+         theme_minimal() +
+         scale_y_log10() +
+         xlab("") +
+         ylab("average background to sample ratio") +
+         scale_color_manual(values=wes_palette(n=3, name="GrandBudapest")) +
+         theme(axis.text.x = element_blank())
 ```
