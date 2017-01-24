@@ -56,7 +56,8 @@ ___
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, results='markup', cache=TRUE}
   co2 <- dplyr::group_by(co2, id) %>%
-         dplyr::summarise(ppm = mean(ppm))
+         dplyr::summarise(mean_ppm = mean(ppm))
+         
 ```
 
 * convert mixing ratio to mass (assuming constant T and P)
